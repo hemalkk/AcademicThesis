@@ -1,0 +1,33 @@
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Google Colab local files
+/content/
+*.local
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables and secrets
+.env
+*.env
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Generated experiment outputs
+final_outputs/
+outputs/
+results/
+
+# Temporary files
+*.tmp
+*.log
