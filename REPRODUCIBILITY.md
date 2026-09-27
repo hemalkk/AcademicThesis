@@ -32,7 +32,7 @@ The main packages are:
 The dataset is expected at:
 
 ```text
-data/Drebin-Dataset.csv
+data/Drebin Dataset.csv
 ```
 
 The notebook uses a Drebin-derived static Android dataset containing permission and API-call-related features.
@@ -42,7 +42,7 @@ The notebook uses a Drebin-derived static Android dataset containing permission 
 1. Clone or download the repository.
 2. Install the requirements.
 3. Open `notebooks/Android Malware Final Code.ipynb` in Google Colab or Jupyter Notebook.
-4. Confirm the dataset path points to `data/Drebin-Dataset.csv`.
+4. Confirm the dataset path points to `data/Drebin Dataset.csv`.
 5. Run the notebook cells sequentially from top to bottom.
 6. Review the generated tables and figures for cross-validation, held-out test evaluation, ROC curves, confusion matrices, feature importance, PCA, and exploratory LazyPredict screening.
 
