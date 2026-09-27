@@ -1,39 +1,42 @@
 # Android Mobile Malware Detection Using Machine Learning
 
-This repository contains the implementation code, dataset structure, and reproducible experiment workflow for an undergraduate thesis and conference paper on Android malware detection using machine learning.
+This repository contains the code, dataset structure, and reproducible experiment workflow for an undergraduate thesis on Android malware detection using machine learning.
 
-The project evaluates conventional machine-learning classifiers using static Android application features derived from permissions and API-call-related indicators. It is presented as a reproducible baseline evaluation, not as a newly proposed malware-classification algorithm or a deployed real-time Android security system.
+The study evaluates conventional machine-learning classifiers using static Android application features derived from permissions and API-call-related indicators. It is an offline static-analysis baseline evaluation—not a new malware-detection algorithm, an on-device Android application, or a real-time security product.
 
-## Project Scope
+For the complete run procedure and experiment protocol, see [REPRODUCIBILITY.md](REPRODUCIBILITY.md).
 
-The project uses a Drebin-derived Android malware dataset and evaluates static analysis features without executing Android applications.
+## Project Overview
 
-The primary experiment compares:
+Android applications may request permissions and use framework APIs that provide access to device information, messaging, network connectivity, services, and other resources. This project uses a Drebin-derived dataset to evaluate whether these static indicators can distinguish benign Android applications from suspicious/malware samples.
+
+The primary evaluation compares four established classifiers:
 
 - Random Forest (RF)
 - Support Vector Machine (SVM)
 - Decision Tree (DT)
 - K-Nearest Neighbours (KNN)
 
-The workflow also includes:
+The project also includes:
 
 - Stratified 80:20 train-test splitting
-- Five-fold stratified cross-validation
-- StandardScaler for SVM and KNN
-- Accuracy, weighted Precision, weighted Recall, weighted F1-score, and ROC-AUC evaluation
+- Five-fold stratified cross-validation on the training set
+- StandardScaler pipelines for SVM and KNN
+- Accuracy, weighted Precision, weighted Recall, weighted F1-score, and ROC-AUC
+- ROC curves and confusion matrices
 - Random Forest feature-importance analysis
-- PCA exploratory dimensionality-reduction analysis
+- PCA explained-variance analysis
 - LazyPredict exploratory classifier screening
 
-## Final Experiment Summary
+## Final Experiment
 
-The final reproducible experiment used:
+The final experiment uses a processed Drebin-derived static Android malware dataset.
 
-| Item | Value |
+| Item | Configuration |
 |---|---|
-| Dataset | Drebin-derived static Android dataset |
-| Total records | 7,255 |
+| Original dataset records | 7,255 |
 | Labelled samples used | 7,254 |
+| Removed records | 1 row with a missing class label |
 | Benign samples | 1,694 |
 | Suspicious/malware samples | 5,560 |
 | Static features | 215 |
@@ -41,20 +44,25 @@ The final reproducible experiment used:
 | Random seed | 42 |
 | Training samples | 5,803 |
 | Held-out test samples | 1,451 |
-| Validation | Five-fold StratifiedKFold cross-validation |
-| PCA result | 140 components retain 95% explained variance |
+| Cross-validation | Five-fold StratifiedKFold with shuffling |
+| Scaling | StandardScaler for SVM and KNN |
+| PCA analysis | 140 components retain 95% explained variance |
 | LazyPredict screening | 20 PCA components retain 47.88% variance |
+
+One feature, `TelephonyManager.getSimCountryIso`, contained five unknown `?` values. These values are converted to `0` before model training so that the feature can be treated numerically.
 
 ## Primary Results
 
-| Model | CV Accuracy | Test Accuracy | Weighted F1-score | ROC-AUC |
-|---|---:|---:|---:|---:|
-| Random Forest | 97.42 ± 0.49 | 97.79 | 97.78 | 0.9978 |
-| SVM | 96.86 ± 0.64 | 97.52 | 97.55 | 0.9961 |
-| Decision Tree | 96.07 ± 0.81 | 96.00 | 95.99 | 0.9399 |
-| KNN | 95.31 ± 0.82 | 95.45 | 95.33 | 0.9809 |
+| Model | CV Accuracy | Test Accuracy | Weighted Precision | Weighted Recall | Weighted F1-score | ROC-AUC |
+|---|---:|---:|---:|---:|---:|---:|
+| Random Forest | 97.42 ± 0.49 | 97.79 | 97.79 | 97.79 | 97.78 | 0.9978 |
+| SVM | 96.86 ± 0.64 | 97.52 | 97.63 | 97.52 | 97.55 | 0.9961 |
+| Decision Tree | 96.07 ± 0.81 | 96.00 | 95.98 | 96.00 | 95.99 | 0.9399 |
+| KNN | 95.31 ± 0.82 | 95.45 | 95.50 | 95.45 | 95.33 | 0.9809 |
 
-Random Forest achieved the strongest held-out test performance in this baseline evaluation. These results apply to the processed Drebin-derived dataset and should not be interpreted as evidence of real-time Android deployment capability or generalisation to modern malware families.
+Random Forest achieved the strongest held-out baseline performance, with 97.79% test accuracy, 97.78% weighted F1-score, and ROC-AUC of 0.9978. It also produced fewer false negatives than SVM in this evaluation.
+
+These findings apply to the processed Drebin-derived dataset under the documented protocol. They do not demonstrate performance on current Android malware, real-time detection ability, or on-device deployment performance.
 
 ## Repository Structure
 
@@ -65,111 +73,127 @@ AcademicThesis/
 │   └── Drebin Dataset.csv
 │
 ├── notebooks/
+│   ├── Android Malware Final Code.ipynb
 │   ├── Drebin_Malware_Classification_Colab_Ready.ipynb
 │   ├── LazyPredict_Drebin.ipynb
 │   ├── featureSelection.ipynb
 │   └── modelComparison.ipynb
 │
-└── README.md
+├── .gitignore
+├── README.md
+├── REPRODUCIBILITY.md
+└── requirements.txt
 ```
 
-## Notebooks
+## Main Notebook
 
-### `Drebin_Malware_Classification_Colab_Ready.ipynb`
+The primary notebook for reproducing the final thesis experiment is:
 
-This notebook contains the main Android malware-classification workflow. It:
+```text
+notebooks/Android Malware Final Code.ipynb
+```
 
-- Loads and prepares the Drebin-derived dataset
-- Uses static permission and API-call-related features
-- Splits data using an 80:20 stratified split
-- Trains Random Forest, SVM, Decision Tree, and KNN
-- Evaluates Accuracy, Precision, Recall, F1-score, ROC-AUC, ROC curves, and confusion matrices
-- Performs Random Forest feature-importance analysis
-- Performs PCA explained-variance analysis
+This is the authoritative final notebook. It contains the experiment workflow used for the reported baseline results, including:
 
-### `LazyPredict_Drebin.ipynb`
+- Dataset loading and inspection
+- Missing-label removal
+- Preprocessing of static permission and API-call-related features
+- Stratified 80:20 train-test split with random seed 42
+- Five-fold cross-validation on the training data
+- Random Forest, SVM, Decision Tree, and KNN evaluation
+- Classification reports and held-out test metrics
+- ROC curves
+- Confusion matrices
+- Random Forest feature importance
+- PCA cumulative explained variance
+- Exploratory LazyPredict screening
 
-This notebook performs exploratory classifier screening. It:
+## Supporting Notebooks
 
-- Applies a PCA-reduced representation
-- Evaluates multiple individual classifiers using LazyPredict
-- Produces a ranked classifier comparison
-- Generates a top-classifier accuracy visualisation
+| Notebook | Purpose |
+|---|---|
+| `Drebin_Malware_Classification_Colab_Ready.ipynb` | Earlier Colab-ready classification and exploratory workflow |
+| `LazyPredict_Drebin.ipynb` | Earlier LazyPredict and feature-selection experiments |
+| `featureSelection.ipynb` | Exploratory feature-selection work |
+| `modelComparison.ipynb` | Additional model-comparison work |
 
-LazyPredict results are exploratory only. They do not represent a tuned ensemble model and do not replace the primary four-model evaluation.
-
-### `featureSelection.ipynb`
-
-This notebook contains exploratory feature-selection work.
-
-### `modelComparison.ipynb`
-
-This notebook contains additional model-comparison experiments.
+The supporting notebooks are retained for transparency and development history. Their preprocessing, model selection, or outputs may differ from the final experiment. Use `Android Malware Final Code.ipynb` for the final reported results.
 
 ## Dataset
 
-The dataset file is located in:
+The dataset is located at:
 
 ```text
 data/Drebin Dataset.csv
 ```
 
-The processed dataset contains static Android application features, including permission and API-call-related indicators. The target labels are:
+It contains 215 static Android application features, including permissions and API-call-related indicators. The final classification labels are:
 
-- `B`: Benign
-- `S`: Suspicious/malware
+- `B`: Benign application
+- `S`: Suspicious/malware application
 
-The repository is intended for academic and reproducibility purposes only. Users should review the dataset licence and applicable usage conditions before reuse.
+The underlying Drebin benchmark is an older Android malware dataset. Users should verify the source dataset licence and institutional rules before redistributing, reusing, or modifying the CSV file.
+
+## Installation
+
+Use Python 3 and install the required libraries:
+
+```bash
+pip install -r requirements.txt
+```
+
+The main dependencies are:
+
+```text
+numpy
+pandas
+scikit-learn
+matplotlib
+seaborn
+lazypredict
+```
 
 ## How to Run
 
 1. Clone or download this repository.
-2. Open a notebook from the `notebooks/` folder in Google Colab or Jupyter Notebook.
-3. Ensure that the dataset path points to:
+2. Install dependencies using `pip install -r requirements.txt`.
+3. Open the primary notebook:
+   ```text
+   notebooks/Android Malware Final Code.ipynb
+   ```
+4. Ensure the notebook points to:
    ```text
    data/Drebin Dataset.csv
    ```
-4. Install the required Python packages if necessary:
-   ```python
-   !pip install pandas numpy scikit-learn matplotlib seaborn lazypredict
-   ```
-5. Run notebook cells sequentially.
-6. Review the generated evaluation metrics, ROC curves, confusion matrices, feature-importance chart, PCA analysis, and LazyPredict ranking.
+5. Run the cells sequentially from top to bottom.
+6. Review the generated metrics, tables, ROC curves, confusion matrices, feature-importance plot, PCA plot, and exploratory LazyPredict ranking.
 
-## Requirements
+The notebook can be run in Google Colab or Jupyter Notebook. If using Google Colab, upload the dataset or adjust the notebook dataset path as required.
 
-The notebooks use the following main Python libraries:
+## Interpretation and Limitations
 
-- Python 3
-- pandas
-- numpy
-- scikit-learn
-- matplotlib
-- seaborn
-- lazypredict
+This work is a reproducible baseline experiment based on static features and an older Drebin-derived dataset. The reported scores should not be interpreted as evidence of:
 
-## Limitations
+- A newly proposed malware-classification algorithm
+- State-of-the-art Android malware detection
+- Real-time Android protection
+- On-device deployment feasibility
+- Low latency, low memory use, or low battery consumption
+- Generalisation to current Android malware families
+- Detection of dynamic code loading, reflection, encrypted payloads, runtime network behaviour, or sandbox-evasion behaviour
 
-This repository supports an offline static-analysis baseline experiment. It does not provide:
+The primary four-model comparison uses fixed, documented configurations. It does not use automated hyperparameter optimisation such as `GridSearchCV` or `RandomizedSearchCV`. PCA and LazyPredict are exploratory analyses only and do not replace the primary comparison.
 
-- A new malware-classification algorithm
-- Real-time Android malware detection
-- On-device deployment measurements
-- Latency, battery, memory, or model-size evaluation
-- Validation using recent or time-separated Android malware datasets
-- Dynamic runtime or hybrid behavioural features
-- Fully optimised hyperparameter tuning for the primary four-model comparison
+## Citation
 
-## Academic Use and Citation
-
-This repository is intended for academic use. If you use or adapt this work, please cite the associated paper and the original Drebin work:
+If you use or adapt this repository, please cite the associated thesis/paper and the original Drebin work:
 
 ```text
 D. Arp, M. Spreitzenbarth, M. Hübner, H. Gascon, and K. Rieck,
 “Drebin: Effective and Explainable Detection of Android Malware in Your Pocket,”
-in Proceedings of the Network and Distributed System Security Symposium (NDSS), 2014.
+Proceedings of the Network and Distributed System Security Symposium (NDSS), 2014.
 ```
 
 ## Licence
 
-This repository is provided for academic and educational purposes. Please contact the authors before substantial reuse, redistribution, or commercial use.
+This repository is provided for academic and educational purposes. Contact the authors before substantial reuse, redistribution, or commercial use.
